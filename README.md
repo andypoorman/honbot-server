@@ -1,23 +1,13 @@
-![honbot](http://i.imgur.com/eniKwWN.jpg)
-HonBot
+HonBot-Server
 =============
+[![Dependency Status](https://david-dm.org/scttcper/honbot-server.svg)](https://david-dm.org/scttcper/honbot-server)
 HonBot is a [Heroes of Newerth (HoN)](http://www.heroesofnewerth.com/) statistics website for the [HoN API](http://api.heroesofnewerth.com/).
 
-New Implementation (unreleased):
-Frontend -> [angularjs](https://angularjs.org/)
-Backend -> [koa.io](https://github.com/koajs/koa.io)
+This repository contains the backend for HonBot.
 
-#/server backend  
+##Installation
 ```bash
+clone the repo
 npm install
 node server.js
-```
-
-#/client frontend
-```bash
-npm install gulp -g
-npm install bower -g
-npm install
-bower install
-gulp serve
 ```
