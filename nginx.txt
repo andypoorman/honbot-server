@@ -6,7 +6,7 @@ upstream hb_backend {
 server {
     listen 0.0.0.0:80;
     server_name api.honbot.com;
-    access_log /home/sc/honbot-django/accessapi.log;
+    access_log /home/sc/honbot-server/accessapi.log;
 
     # pass the request to the node.js server with the correct headers and much more can be added, see nginx config options
     location / {
