@@ -1,6 +1,6 @@
 var http = require('http');
 var concat = require('concat-stream');
-var config = require('./config');
+var config = require('../config');
 var moment = require('moment');
 
 

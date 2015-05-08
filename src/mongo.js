@@ -1,7 +1,7 @@
 // from https://github.com/MangroveTech/koa-mongo
 var MongoClient = require('mongodb').MongoClient;
 var poolModule = require('generic-pool');
-var config = require('./config');
+var config = require('../config');
 
 module.exports = mongo;
 

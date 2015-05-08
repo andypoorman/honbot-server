@@ -1,5 +1,5 @@
 var mongo = require('mongodb').MongoClient;
-var config = require('./config');
+var config = require('../config');
 
 mongo.connect(config.db, function(err, db) {
     var players = db.collection('players');

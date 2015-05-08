@@ -13,9 +13,9 @@ var JSONStream = require('JSONStream');
 var ratelimit = require('koa-ratelimit');
 var redis = require('redis');
 
-var player = require('./player');
-var match = require('./match');
-var mongo = require('./mongo');
+var player = require('./src/player');
+var match = require('./src/match');
+var mongo = require('./src/mongo');
 var config = require('./config');
 
 var app = koa();
