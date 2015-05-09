@@ -38,7 +38,7 @@ function mongo() {
 
     return function* mongo(next) {
         this.db = yield mongoPool.acquire;
-        if (!this.mongo) {
+        if (!this.db) {
             this.throw('Fail to acquire one mongo connection');
         }
         debug('Acquire one connection (min: %s, max: %s, poolSize: %s)', min, max, mongoPool.getPoolSize());
