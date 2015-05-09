@@ -24,6 +24,12 @@ if (config.debug) {
     app.use(logger());
 }
 
+app.io.use(function* (next) {
+  // on connect
+  yield* next;
+  // on disconnect
+});
+
 app.use(ratelimit({
   db: redis.createClient(),
   duration: 900000,
