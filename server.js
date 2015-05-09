@@ -24,12 +24,6 @@ if (config.debug) {
     app.use(logger());
 }
 
-app.io.use(function* (next) {
-  // on connect
-  yield* next;
-  // on disconnect
-});
-
 app.use(ratelimit({
   db: redis.createClient(),
   duration: 900000,
@@ -64,7 +58,6 @@ app.get('/player/:player/', function*(next) {
     if(p.length === 0 && updated && updated.error){
         this.status = 400;
         this.body = updated;
-        return;
     }
     if(updated && !updated.error){
         this.app.io.emit('update', {nickname: updated.nickname});
@@ -136,7 +129,6 @@ app.get('/cache/:player/:mode/', function*(next) {
     if(String(pid) !== this.params.player){
         this.status = 400;
         this.body = {error: 'User ID is not number.'};
-        return;
     }
     var modes = {
         'rnk': 1,
