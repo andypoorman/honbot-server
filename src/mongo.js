@@ -2,6 +2,7 @@
 var MongoClient = require('mongodb').MongoClient;
 var poolModule = require('generic-pool');
 var config = require('../config');
+var debug = require('debug')('koa-mongo');
 
 module.exports = mongo;
 
@@ -47,8 +48,8 @@ function mongo() {
         } catch (e) {
             throw e;
         } finally {
-            mongoPool.release(this.mongo);
+            mongoPool.release(this.db);
             debug('Release one connection (min: %s, max: %s, poolSize: %s)', min, max, mongoPool.getPoolSize());
         }
-    }
+    };
 }
