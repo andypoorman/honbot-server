@@ -8,7 +8,7 @@ module.exports = mongo;
 function mongo() {
     var max = config.max || 100;
     var min = config.min || 1;
-    var timeout = config.timeout || 30000;
+    var timeout = config.timeout || 10000;
     var log = config.log || false;
     var mongoUrl = config.db;
 
