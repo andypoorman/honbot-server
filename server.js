@@ -27,7 +27,7 @@ if (config.debug) {
 app.use(ratelimit({
   db: redis.createClient(),
   duration: 900000,
-  max: 75,
+  max: 100,
   id: function (context) {
     return context.ip;
   }
