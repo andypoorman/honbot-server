@@ -16,12 +16,12 @@ var lookupPlayerID = function(id) {
     });
 };
 
-var lookupPlayerNickname = function (nickname){
+var lookupPlayerNickname = function (nickname, exclude){
     var that = this;
     return new Promise(function(resolve) {
         that.db.collection('players').find({
             'nick': nickname.toLowerCase()
-        }).limit(1).toArray(function(err, docs) {
+        }, exclude).limit(1).toArray(function(err, docs) {
             resolve(docs);
         });
     });

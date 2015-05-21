@@ -4,11 +4,11 @@
  */
 var koa = require('koa.io');
 var logger = require('koa-logger');
-var router = require('koa-router');
 var compress = require('koa-compress');
 var cors = require('koa-cors');
 var moment = require('moment');
 var _ = require('lodash');
+var route = require('koa-route');
 var JSONStream = require('JSONStream');
 var ratelimit = require('koa-ratelimit');
 var redis = require('redis');
@@ -35,7 +35,6 @@ app.use(ratelimit({
 app.use(compress());
 app.use(cors());
 app.use(mongo());
-app.use(router(app));
 
 // json middleware
 app.use(function*(next) {
@@ -43,16 +42,17 @@ app.use(function*(next) {
     yield next;
 });
 
-app.get('/player/:player/', function*(next) {
+app.use(route.get('/player/:player', function*(playerName, next) {
     var updated;
-    var p = yield player.lookupPlayerNickname.call(this, this.params.player);
+    var exclude = {rnk_history: 0, cs_history: 0, acc_history: 0};
+    var p = yield player.lookupPlayerNickname.call(this, playerName, exclude);
     if (p.length === 1) {
         p = p[0];
         if (moment.utc().diff(moment(p.updated), 'minutes') > 15) {
-            updated = yield player.updatePlayer.call(this, this.params.player);
+            updated = yield player.updatePlayer.call(this, playerName);
         }
     } else {
-        updated = yield player.updatePlayer.call(this, this.params.player);
+        updated = yield player.updatePlayer.call(this, playerName);
     }
     // not in database, couldn't get from api. Throw error
     if(p.length === 0 && updated && updated.error){
@@ -69,10 +69,10 @@ app.get('/player/:player/', function*(next) {
         this.body.fallback = true;
     }
     yield next;
-});
+}));
 
-app.get('/bulkPlayers/:players/', function*(next){
-    var players = this.params.players.split(',');
+app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
+    var players = playerList.split(',');
     if(players.length > 50){
         this.throw(400);
     }
@@ -81,25 +81,24 @@ app.get('/bulkPlayers/:players/', function*(next){
     });
     this.body = this.db.collection('players').find({account_id: {$in: players}}).stream().pipe(JSONStream.stringify());
     yield next;
-});
+}));
 
-app.get('/history/:player/:page/:mode/', function*(next) {
-    var count = Number(this.params.page) * 25;
-    var nickname = this.params.player;
-    var p = yield player.lookupPlayerNickname.call(this, nickname);
+app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mode, next) {
+    var count = Number(page) * 25;
+    var p = yield player.lookupPlayerNickname.call(this, playerName, {});
     var updated;
     if (p.length === 1 && p[0].historyUpdated !== undefined) {
         p = p[0];
         if (moment.utc().diff(moment(p.historyUpdated), 'minutes') > 15) {
-            updated = yield player.updateHistory.call(this, nickname);
+            updated = yield player.updateHistory.call(this, playerName);
         }
     } else {
-        updated = yield player.updateHistory.call(this, nickname);
+        updated = yield player.updateHistory.call(this, playerName);
     }
     if (updated && !updated.error) {
         p = updated;
     }
-    var sliced = _.slice(p[`${this.params.mode}_history`], count - 25, count);
+    var sliced = _.slice(p[`${mode}_history`], count - 25, count);
     var lookup = yield match.lookup.call(this, sliced);
     var exists = _.pluck(lookup, 'id');
     var needs = _.difference(sliced, exists);
@@ -113,20 +112,20 @@ app.get('/history/:player/:page/:mode/', function*(next) {
     this.body.account_id = p.account_id;
     this.body.matches = _.sortByOrder(lookup, 'id', false);
     yield next;
-});
+}));
 
-app.get('/match/:match/', function*(next){
-    var m = yield match.lookup.call(this, [Number(this.params.match)]);
+app.use(route.get('/match/:match', function*(matchID, next){
+    var m = yield match.lookup.call(this, [Number(matchID)]);
     if (m.length !== 1) {
-        m = yield match.multigrab.call(this, [this.params.match]);
+        m = yield match.multigrab.call(this, [matchID]);
     }
     this.body = m[0];
     yield next;
-});
+}));
 
-app.get('/cache/:player/:mode/', function*(next) {
-    var pid = Number(this.params.player);
-    if(String(pid) !== this.params.player){
+app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
+    var pid = Number(playerID);
+    if(String(pid) !== playerID){
         this.status = 400;
         this.body = {error: 'User ID is not number.'};
     }
@@ -135,15 +134,14 @@ app.get('/cache/:player/:mode/', function*(next) {
         'cs': 2,
         'acc': 3
     };
-    var mode = modes[this.params.mode];
     this.body = this.db.collection('matches').find({
         'players.player_id': pid,
         mode: mode
     }).stream().pipe(JSONStream.stringify());
     yield next;
-});
+}));
 
-app.get('/counts/', function*(next){
+app.use(route.get('/counts', function*(next){
     var that = this;
     this.body = {};
     this.body.players = yield new Promise(function(resolve, reject) {
@@ -182,18 +180,18 @@ app.get('/counts/', function*(next){
         });
     });
     yield next;
-});
+}));
 
-app.get('/recentPlayers/', function*(next){
+app.use(route.get('/recentPlayers', function*(next){
     this.body = this.db.collection('players').find({}, {nickname: 1}, {limit: 20}).sort({updated: -1}).stream().pipe(JSONStream.stringify());
     yield next;
-});
+}));
 
-app.get('/recentAPI/', function*(next){
+app.use(route.get('/recentAPI', function*(next){
     var gtr = moment.utc().subtract(1, 'day').toDate();
     this.body = this.db.collection('apilogger').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
     yield next;
-});
+}));
 
 app.listen(config.port);
 
