@@ -18,7 +18,7 @@
     "koa-response-time": "^1.0.2",
     "koa-route": "^2.4.1",
     "koa.io": "0.0.3",
-    "lodash": "^3.9.1",
+    "lodash": "^3.9.2",
     "moment": "^2.10.3",
     "moment-timezone": "^0.3.1",
     "mongodb": "^2.0.33",
