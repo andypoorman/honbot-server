@@ -11,6 +11,7 @@
     "config": "^1.13.0",
     "debug": "^2.2.0",
     "generic-pool": "^2.2.0",
+    "gm": "^1.18.1",
     "koa-compress": "^1.0.8",
     "koa-cors": "0.0.14",
     "koa-logger": "^1.2.2",

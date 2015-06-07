@@ -12,6 +12,7 @@ var route = require('koa-route');
 var JSONStream = require('JSONStream');
 var ratelimit = require('koa-ratelimit');
 var redis = require('redis');
+var gm = require('gm').subClass({imageMagick: true});
 
 var player = require('./src/player');
 var match = require('./src/match');
@@ -191,6 +192,35 @@ app.use(route.get('/recentAPI', function*(next){
     var gtr = moment.utc().subtract(1, 'day').toDate();
     this.body = this.db.collection('apilogger').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
     yield next;
+}));
+
+app.use(route.get('/banner/:player', function*(playerName, next){
+    this.type = 'image/png';
+    let p = yield player.lookupPlayerNickname.call(this, playerName, {});
+    if (p.length === 1) {
+        p = p[0];
+        let mmr = Math.round(p.rnk_amm_team_rating);
+        let win = p.rnk_wins;
+        let loss = p.rnk_losses;
+        this.body = yield new Promise(function(resolve) {
+            gm(400, 60, '#000')
+            .fill('#ffffff')
+            .font('Prototype.ttf', 30)
+            .drawText(5, 26, p.nickname)
+            .font('Prototype.ttf', 12)
+            .drawText(333, 10, 'honbot.com')
+            .font('Prototype.ttf', 18)
+            .fill('#0080FF')
+            .drawText(5, 53, `MMR: ${mmr}`)
+            .fill('#009900')
+            .drawText(105, 53, `W: ${win}`)
+            .fill('#990000')
+            .drawText(175, 53, `L: ${loss}`)
+            .toBuffer('PNG',function (err, buffer) {
+              resolve(buffer);
+            });
+        });
+    };
 }));
 
 app.listen(config.port);
