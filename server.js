@@ -208,7 +208,7 @@ app.use(route.get('/banner/:player', function*(playerName, next){
             .font('Prototype.ttf', 30)
             .drawText(5, 26, p.nickname)
             .font('Prototype.ttf', 12)
-            .drawText(333, 10, 'honbot.com')
+            .drawText(329, 10, 'honbot.com')
             .font('Prototype.ttf', 18)
             .fill('#0080FF')
             .drawText(5, 53, `MMR: ${mmr}`)
