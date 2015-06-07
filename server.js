@@ -220,7 +220,7 @@ app.use(route.get('/banner/:player', function*(playerName, next){
               resolve(buffer);
             });
         });
-    };
+    }
 }));
 
 app.listen(config.port);
