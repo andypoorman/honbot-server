@@ -99,10 +99,10 @@ var processMatch = function(match) {
             bdmg: Number(n.bdmg),
             denies: Number(n.denies),
             exp_denied: Number(n.exp_denied),
-            kdr: (parseFloat(n.herokills) / parseFloat(n.deaths)).toFixed(3),
-            gpm: (parseFloat(n.gold) / minutes).toFixed(3),
-            xpm: (parseFloat(n.exp) / minutes).toFixed(3),
-            apm: (parseFloat(n.actions) / minutes).toFixed(3),
+            kdr: Number((parseFloat(n.herokills) / parseFloat(n.deaths)).toFixed(3)),
+            gpm: Number((parseFloat(n.gold) / minutes).toFixed(3)),
+            xpm: Number((parseFloat(n.exp) / minutes).toFixed(3)),
+            apm: Number((parseFloat(n.actions) / minutes).toFixed(3)),
             consumables: Number(n.consumables),
             wards: Number(n.wards)
         });
