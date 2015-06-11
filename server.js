@@ -30,6 +30,7 @@ app.use(ratelimit({
   duration: 900000,
   max: 100,
   id: function (context) {
+    console.log(context.ip);
     return context.ip;
   }
 }));
