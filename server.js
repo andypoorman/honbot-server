@@ -20,6 +20,7 @@ var mongo = require('./src/mongo');
 var config = require('./config');
 
 var app = koa();
+app.proxy = true;
 
 if (config.debug) {
     app.use(logger());
@@ -30,7 +31,7 @@ app.use(ratelimit({
   duration: 900000,
   max: 100,
   id: function (context) {
-    console.log(context.ip);
+    console.log(context);
     return context.ip;
   }
 }));
