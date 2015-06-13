@@ -110,9 +110,7 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
             lookup = lookup.concat(added);
         }
     }
-    this.body = {};
-    this.body.account_id = p.account_id;
-    this.body.matches = _.sortByOrder(lookup, 'id', false);
+    this.body = _.sortByOrder(lookup, 'id', false);
     yield next;
 }));
 
