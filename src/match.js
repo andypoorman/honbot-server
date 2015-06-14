@@ -5,9 +5,9 @@ var _ = require('lodash-node');
 var moment = require('moment-timezone');
 
 var lookup = function(list) {
-    var that = this;
+    let matches = this.db.collection('matches');
     return new Promise(function(resolve) {
-        that.db.collection('matches').find({
+        matches.find({
             'id': {$in: list}
         }).toArray(function(err, docs) {
             resolve(docs);

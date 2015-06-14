@@ -31,7 +31,7 @@ var api = function(path, count) {
                     resolve(parsed);
                 }));
             } else if (response.statusCode === 429) {
-                io.emit('api', {success: false});
+                that.app.io.emit('api', {success: false});
                 if (count > 10) {
                     reject(Error('Bad S2 API response'));
                 } else {
