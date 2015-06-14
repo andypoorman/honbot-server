@@ -65,14 +65,12 @@ var processMatch = function(match) {
     processed.id = Number(match[3][0].match_id);
     // create array of items
     _.forEach(match[1], function(n){
-        items[n.account_id] = [];
-        _.forEach(_.range(1, 7), function(i){
-            items[n.account_id].push(Number(n[`slot_${i}`]) || null);
+        items[n.account_id] = _.map(_.range(1, 7), function(i){
+            return Number(n[`slot_${i}`]) || null;
         });
     });
-    processed.players = [];
-    _.forEach(match[2], function(n) {
-        processed.players.push({
+    processed.players = _.map(match[2], function(n) {
+        return {
             player_id: Number(n.account_id),
             match_id: processed.id,
             nickname: n.nickname,
@@ -88,7 +86,7 @@ var processMatch = function(match) {
             buybacks: Number(n.buybacks),
             discos: Number(n.discos),
             kicked: Number(n.kicked),
-            mmr_change: parseFloat(n.amm_team_rating),
+            mmr_change: Number(n.amm_team_rating),
             herodmg: Number(n.herodmg),
             kills: Number(n.herokills),
             assists: Number(n.heroassists),
@@ -99,13 +97,13 @@ var processMatch = function(match) {
             bdmg: Number(n.bdmg),
             denies: Number(n.denies),
             exp_denied: Number(n.exp_denied),
-            kdr: Number((parseFloat(n.herokills) / parseFloat(n.deaths)).toFixed(3)),
-            gpm: Number((parseFloat(n.gold) / minutes).toFixed(3)),
-            xpm: Number((parseFloat(n.exp) / minutes).toFixed(3)),
-            apm: Number((parseFloat(n.actions) / minutes).toFixed(3)),
+            kdr: Number((Number(n.herokills) / Number(n.deaths)).toFixed(3)),
+            gpm: Number((Number(n.gold) / minutes).toFixed(3)),
+            xpm: Number((Number(n.exp) / minutes).toFixed(3)),
+            apm: Number((Number(n.actions) / minutes).toFixed(3)),
             consumables: Number(n.consumables),
             wards: Number(n.wards)
-        });
+        };
     });
     return processed;
 };
