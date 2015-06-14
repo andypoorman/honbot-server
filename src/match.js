@@ -17,13 +17,12 @@ var lookup = function(list) {
 
 var multigrab = function(list) {
     let matches = this.db.collection('matches');
-    
+
     list = _.remove(list, function(n){ return n !== 0; });
     let joined = list.join('+');
     return api.call(this, `/multi_match/all/matchids/${joined}`).then(
         function(res) {
-            let processed = [];
-            processed = _.map(list, function(n){
+            let processed = _.map(list, function(n){
                 let temp = _.map(res, function(j){
                     return _.filter(j, 'match_id', `${n}`);
                 });
@@ -32,7 +31,6 @@ var multigrab = function(list) {
                     return processMatch(temp);
                 }
             });
-            processed.updated = moment.utc().toDate();
             matches.insert(processed, {multi: true});
             return processed;
         },
