@@ -7,7 +7,7 @@ var moment = require('moment');
 
 
 var api = function(path, count) {
-    var that = this;
+    let that = this;
     if (!count) {
         count = 0;
     }
@@ -17,34 +17,23 @@ var api = function(path, count) {
             path: `${path}?token=${config.token}`
         }, function(response) {
             console.log(`${path}?token=${config.token}`, response.statusCode);
+            that.db.collection('apilogger').insert({
+                date: moment.utc().toDate(),
+                api: path,
+                ip: that.request.ip,
+                host: response.hostname,
+                status: response.statusCode
+            });
             if (response.statusCode === 200) {
+                that.app.io.emit('api', {success: true});
                 response.pipe(concat(function(body) {
                     var parsed = JSON.parse(body);
-                    that.app.io.emit('api', {
-                        success: true
-                    });
                     resolve(parsed);
-                    that.db.collection('apilogger').insert({
-                        date: moment.utc().toDate(),
-                        api: path,
-                        ip: that.request.ip,
-                        host: that.request.hostname,
-                        status: response.statusCode
-                    });
                 }));
             } else if (response.statusCode === 429) {
-                that.app.io.emit('api', {
-                    success: false
-                });
+                io.emit('api', {success: false});
                 if (count > 10) {
                     reject(Error('Bad S2 API response'));
-                    that.db.collection('apilogger').insert({
-                        date: moment.utc().toDate(),
-                        api: path,
-                        ip: that.request.ip,
-                        host: that.request.hostname,
-                        status: response.statusCode
-                    });
                 } else {
                     setTimeout(function() {
                         resolve(api.call(that, path, count + 1));
@@ -52,13 +41,6 @@ var api = function(path, count) {
                 }
             } else {
                 reject(Error('Bad S2 API response'));
-                that.db.collection('apilogger').insert({
-                    date: moment.utc().toDate(),
-                    api: path,
-                    ip: that.request.ip,
-                    host: that.request.hostname,
-                    status: response.statusCode
-                });
             }
         });
     });
