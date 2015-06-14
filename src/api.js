@@ -1,3 +1,5 @@
+'use strict';
+
 var http = require('http');
 var concat = require('concat-stream');
 var config = require('../config');
