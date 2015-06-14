@@ -142,21 +142,23 @@ app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
 }));
 
 app.use(route.get('/counts', function*(next){
-    let db = this.db;
+    let apilogger = this.db.collection('apilogger');
+    let matches = this.db.collection('matches');
+    let players = this.db.collection('players');
     this.body = {};
     this.body.players = yield new Promise(function(resolve) {
-        db.collection('players').count(function(err, count){
+        players.count(function(err, count){
             resolve(count);
         });
     });
     this.body.matches = yield new Promise(function(resolve) {
-        db.collection('matches').count(function(err, count){
+        matches.count(function(err, count){
             resolve(count);
         });
     });
     let short = moment.utc().subtract(15, 'minutes').toDate();
     this.body.apiSuccess = yield new Promise(function(resolve) {
-        db.collection('apilogger').find({
+        apilogger.find({
             date: {$gte: short},
             status: 200
         }).count(function(err, count){
@@ -164,7 +166,7 @@ app.use(route.get('/counts', function*(next){
         });
     });
     this.body.apiFail = yield new Promise(function(resolve) {
-        db.collection('apilogger').find({
+        apilogger.find({
             date: {$gte: short},
             status: {$ne: 200}
         }).count(function(err, count){
@@ -173,7 +175,7 @@ app.use(route.get('/counts', function*(next){
     });
     let gtr = moment.utc().subtract(1, 'day').toDate();
     this.body.api = yield new Promise(function(resolve) {
-        db.collection('apilogger').find({
+        apilogger.find({
             date: {$gte: gtr},
         }).count(function(err, count){
             resolve(count);
