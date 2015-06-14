@@ -4,9 +4,9 @@ var config = require('../config');
 var moment = require('moment');
 
 
- var api = function(path, count) {
+var api = function(path, count) {
     var that = this;
-    if(!count){
+    if (!count) {
         count = 0;
     }
     return new Promise(function(resolve, reject) {
@@ -18,7 +18,9 @@ var moment = require('moment');
             if (response.statusCode === 200) {
                 response.pipe(concat(function(body) {
                     var parsed = JSON.parse(body);
-                    that.app.io.emit('api', {success: true});
+                    that.app.io.emit('api', {
+                        success: true
+                    });
                     resolve(parsed);
                     that.db.collection('apilogger').insert({
                         date: moment.utc().toDate(),
@@ -29,8 +31,10 @@ var moment = require('moment');
                     });
                 }));
             } else if (response.statusCode === 429) {
-                that.app.io.emit('api', {success: false});
-                if(count > 10){
+                that.app.io.emit('api', {
+                    success: false
+                });
+                if (count > 10) {
                     reject(Error('Bad S2 API response'));
                     that.db.collection('apilogger').insert({
                         date: moment.utc().toDate(),
@@ -40,7 +44,9 @@ var moment = require('moment');
                         status: response.statusCode
                     });
                 } else {
-                    setTimeout(function(){resolve(api.call(that, path, count + 1));}, 150);
+                    setTimeout(function() {
+                        resolve(api.call(that, path, count + 1));
+                    }, 150);
                 }
             } else {
                 reject(Error('Bad S2 API response'));

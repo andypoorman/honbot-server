@@ -7,7 +7,7 @@ var logger = require('koa-logger');
 var compress = require('koa-compress');
 var cors = require('kcors');
 var moment = require('moment');
-var _ = require('lodash');
+var _ = require('lodash-node');
 var route = require('koa-route');
 var JSONStream = require('JSONStream');
 var ratelimit = require('koa-ratelimit');
@@ -45,9 +45,9 @@ app.use(function*(next) {
 });
 
 app.use(route.get('/player/:player', function*(playerName, next) {
-    var updated;
-    var exclude = {rnk_history: 0, cs_history: 0, acc_history: 0};
-    var p = yield player.lookupPlayerNickname.call(this, playerName, exclude);
+    let updated;
+    let exclude = {rnk_history: 0, cs_history: 0, acc_history: 0};
+    let p = yield player.lookupPlayerNickname.call(this, playerName, exclude);
     if (p.length === 1) {
         p = p[0];
         if (moment.utc().diff(moment(p.updated), 'minutes') > 15) {
@@ -74,7 +74,7 @@ app.use(route.get('/player/:player', function*(playerName, next) {
 }));
 
 app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
-    var players = playerList.split(',');
+    let players = playerList.split(',');
     if(players.length > 50){
         this.throw(400);
     }
@@ -86,9 +86,9 @@ app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
 }));
 
 app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mode, next) {
-    var count = Number(page) * 25;
-    var p = yield player.lookupPlayerNickname.call(this, playerName, {});
-    var updated;
+    let count = Number(page) * 25;
+    let p = yield player.lookupPlayerNickname.call(this, playerName, {});
+    let updated;
     if (p.length === 1 && p[0].historyUpdated !== undefined) {
         p = p[0];
         if (moment.utc().diff(moment(p.historyUpdated), 'minutes') > 15) {
@@ -100,12 +100,12 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
     if (updated && !updated.error) {
         p = updated;
     }
-    var sliced = _.slice(p[`${mode}_history`], count - 25, count);
-    var lookup = yield match.lookup.call(this, sliced);
-    var exists = _.pluck(lookup, 'id');
-    var needs = _.difference(sliced, exists);
+    let sliced = _.slice(p[`${mode}_history`], count - 25, count);
+    let lookup = yield match.lookup.call(this, sliced);
+    let exists = _.pluck(lookup, 'id');
+    let needs = _.difference(sliced, exists);
     if(needs.length >= 1){
-        var added = yield match.multigrab.call(this, needs);
+        let added = yield match.multigrab.call(this, needs);
         if(added && !added.error){
             lookup = lookup.concat(added);
         }
@@ -115,7 +115,7 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
 }));
 
 app.use(route.get('/match/:match', function*(matchID, next){
-    var m = yield match.lookup.call(this, [Number(matchID)]);
+    let m = yield match.lookup.call(this, [Number(matchID)]);
     if (m.length !== 1) {
         m = yield match.multigrab.call(this, [matchID]);
     }
@@ -124,12 +124,12 @@ app.use(route.get('/match/:match', function*(matchID, next){
 }));
 
 app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
-    var pid = Number(playerID);
+    let pid = Number(playerID);
     if(String(pid) !== playerID){
         this.status = 400;
         this.body = {error: 'User ID is not number.'};
     }
-    var modes = {
+    let modes = {
         'rnk': 1,
         'cs': 2,
         'acc': 3
@@ -142,38 +142,38 @@ app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
 }));
 
 app.use(route.get('/counts', function*(next){
-    var that = this;
+    let db = this.db;
     this.body = {};
-    this.body.players = yield new Promise(function(resolve, reject) {
-        that.db.collection('players').count(function(err, count){
+    this.body.players = yield new Promise(function(resolve) {
+        db.collection('players').count(function(err, count){
             resolve(count);
         });
     });
-    this.body.matches = yield new Promise(function(resolve, reject) {
-        that.db.collection('matches').count(function(err, count){
+    this.body.matches = yield new Promise(function(resolve) {
+        db.collection('matches').count(function(err, count){
             resolve(count);
         });
     });
-    var short = moment.utc().subtract(15, 'minutes').toDate();
-    this.body.apiSuccess = yield new Promise(function(resolve, reject) {
-        that.db.collection('apilogger').find({
+    let short = moment.utc().subtract(15, 'minutes').toDate();
+    this.body.apiSuccess = yield new Promise(function(resolve) {
+        db.collection('apilogger').find({
             date: {$gte: short},
             status: 200
         }).count(function(err, count){
             resolve(count);
         });
     });
-    this.body.apiFail = yield new Promise(function(resolve, reject) {
-        that.db.collection('apilogger').find({
+    this.body.apiFail = yield new Promise(function(resolve) {
+        db.collection('apilogger').find({
             date: {$gte: short},
             status: {$ne: 200}
         }).count(function(err, count){
             resolve(count);
         });
     });
-    var gtr = moment.utc().subtract(1, 'day').toDate();
-    this.body.api = yield new Promise(function(resolve, reject) {
-        that.db.collection('apilogger').find({
+    let gtr = moment.utc().subtract(1, 'day').toDate();
+    this.body.api = yield new Promise(function(resolve) {
+        db.collection('apilogger').find({
             date: {$gte: gtr},
         }).count(function(err, count){
             resolve(count);
@@ -188,12 +188,12 @@ app.use(route.get('/recentPlayers', function*(next){
 }));
 
 app.use(route.get('/recentAPI', function*(next){
-    var gtr = moment.utc().subtract(1, 'day').toDate();
+    let gtr = moment.utc().subtract(1, 'day').toDate();
     this.body = this.db.collection('apilogger').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
-app.use(route.get('/banner/:player', function*(playerName, next){
+app.use(route.get('/banner/:player', function*(playerName){
     this.type = 'image/png';
     let p = yield player.lookupPlayerNickname.call(this, playerName, {});
     if (p.length === 1) {

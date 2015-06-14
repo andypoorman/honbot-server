@@ -1,7 +1,7 @@
 'use strict';
 
 var api = require('./api');
-var _ = require('lodash');
+var _ = require('lodash-node');
 var moment = require('moment-timezone');
 
 var lookup = function(list) {
@@ -16,11 +16,11 @@ var lookup = function(list) {
 };
 
 var multigrab = function(list) {
-    var that = this;
-    var joined = list.join('+');
+    let that = this;
+    let joined = list.join('+');
     return api.call(this, `/multi_match/all/matchids/${joined}`).then(
         function(res) {
-            var processed = [];
+            let processed = [];
             _.forEach(list, function(n){
                 var temp = [
                     _.filter(res[0], 'match_id', `${n}`),
@@ -46,8 +46,8 @@ var multigrab = function(list) {
 };
 
 var processMatch = function(match) {
-    var processed = {};
-    var items = {};
+    let processed = {};
+    let items = {};
     if(match[0][0].officl === '1' && match[0][0].cas === '1' && match[0][0].nl === '1'){
         // casual
         processed.mode = 2;
@@ -58,7 +58,7 @@ var processMatch = function(match) {
         processed.mode = 3;
     }
     processed.length = Number(match[3][0].time_played);
-    var minutes = moment.duration(processed.length, 'seconds').asMinutes();
+    let minutes = moment.duration(processed.length, 'seconds').asMinutes();
     processed.version = match[3][0].version;
     processed.map_used = match[3][0].map;
     processed.date = moment.tz(match[3][0].mdt, 'YYYY-MM-DD HH:mm:ss', 'America/Detroit').toDate();

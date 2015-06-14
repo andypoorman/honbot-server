@@ -4,16 +4,14 @@ var poolModule = require('generic-pool');
 var config = require('../config');
 var debug = require('debug')('koa-mongo');
 
-module.exports = mongo;
-
 function mongo() {
-    var max = config.max || 100;
-    var min = config.min || 1;
-    var timeout = config.timeout || 30000;
-    var log = config.log || false;
-    var mongoUrl = config.db;
+    let max = config.max || 100;
+    let min = config.min || 1;
+    let timeout = config.timeout || 30000;
+    let log = config.log || false;
+    let mongoUrl = config.db;
 
-    var mongoPool = poolModule.Pool({
+    let mongoPool = poolModule.Pool({
         name: 'koa-mongo',
         create: function(callback) {
             MongoClient.connect(mongoUrl, {
@@ -53,3 +51,5 @@ function mongo() {
         }
     };
 }
+
+module.exports = mongo;
