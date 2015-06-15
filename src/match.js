@@ -17,20 +17,22 @@ var lookup = function(list) {
 
 var multigrab = function(list) {
     let matches = this.db.collection('matches');
-
-    list = _.remove(list, function(n){ return n !== 0; });
-    let joined = list.join('+');
+    let joined = list.join('+').split('+0+')[0];
     return api.call(this, `/multi_match/all/matchids/${joined}`).then(
         function(res) {
             let processed = _.map(list, function(n){
-                let temp = _.map(res, function(j){
-                    return _.filter(j, 'match_id', `${n}`);
-                });
+                var temp = [
+                    _.filter(res[0], 'match_id', `${n}`),
+                    _.filter(res[1], 'match_id', `${n}`),
+                    _.filter(res[2], 'match_id', `${n}`),
+                    _.filter(res[3], 'match_id', `${n}`)
+                ];
                 // filter out non exist
                 if(temp[0].length !== 0 && temp[1].length !== 0){
                     return processMatch(temp);
                 }
             });
+            processed = _.compact(processed);
             matches.insert(processed, {multi: true});
             return processed;
         },
