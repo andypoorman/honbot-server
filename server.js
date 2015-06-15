@@ -2,6 +2,7 @@
 /**
  * Koa Module dependencies.
  */
+require('newrelic');
 var koa = require('koa.io');
 var logger = require('koa-logger');
 var compress = require('koa-compress');

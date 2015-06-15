@@ -21,3 +21,4 @@ honbot-www/dist
 */banners/*.png
 config.py
 config.js
+newrelic.js
