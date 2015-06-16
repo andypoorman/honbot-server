@@ -190,9 +190,9 @@ app.use(route.get('/recentPlayers', function*(next){
     yield next;
 }));
 
-app.use(route.get('/recentAPI', function*(next){
+app.use(route.get('/recentMatches', function*(next){
     let gtr = moment.utc().subtract(1, 'day').toDate();
-    this.body = this.db.collection('apilogger').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
+    this.body = this.db.collection('matches').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
