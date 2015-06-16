@@ -17,3 +17,16 @@ setup config.js. Check config.example.js
 npm install
 node server.js
 ```
+
+
+## Indexes
+Add these to speed things up
+```javascript
+db.players.ensureIndex({'account_id': 1}, {unique: true});
+db.players.ensureIndex({'nick': 1}, {unique: true});
+db.matches.ensureIndex({'mode': 1});
+db.matches.ensureIndex({'id': 1}, {unique: true});
+db.createCollection('apilogger', {max: 50000});
+db.apilogger.ensureIndex({'status': 1});
+db.apilogger.ensureIndex({'date': 1});
+```
