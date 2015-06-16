@@ -26,6 +26,7 @@ db.players.ensureIndex({'account_id': 1}, {unique: true});
 db.players.ensureIndex({'nick': 1}, {unique: true});
 db.matches.ensureIndex({'mode': 1});
 db.matches.ensureIndex({'id': 1}, {unique: true});
+db.matches.ensureIndex({'players.player_id': 1});
 db.createCollection('apilogger', {max: 50000});
 db.apilogger.ensureIndex({'status': 1});
 db.apilogger.ensureIndex({'date': 1});
