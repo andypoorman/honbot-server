@@ -68,7 +68,7 @@ var processHistory = function(res) {
     _.forEach(res, function(obj, key){
         data[key] = _.map(obj.history.match(/([0-9]{6,12})/g), function(n){
             return Number(n);
-        });
+        }).sort(function(a, b){return b-a;});
     });
     return {
         rnk_history: data[0],
