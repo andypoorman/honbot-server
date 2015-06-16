@@ -27,16 +27,16 @@ var lookupPlayerNickname = function (nickname, exclude){
 };
 
 var updatePlayer = function (nickname){
-    let db = this.db;
+    let players = this.db.collection('players');
     return api.call(this, `/player_statistics/all/nickname/${nickname}/`).then(
         function(res) {
             if(res.account_id === '0'){
                 return {error: 'Player banned or missing. Got account_id 0.'};
             }
-            let processed = processPlayer(res);
-            processed.updated = moment.utc().toDate();
-            db.collection('players').update({account_id: processed.account_id}, {$set: processed}, {upsert: true});
-            return processed;
+            res = processPlayer(res);
+            res.updated = moment.utc().toDate();
+            players.update({account_id: res.account_id}, {$set: res}, {upsert: true});
+            return res;
         },
         function(error) {
             return {
@@ -47,13 +47,13 @@ var updatePlayer = function (nickname){
 };
 
 var updateHistory = function(nickname) {
-    let db = this.db;
+    let players = this.db.collection('players');
     return api.call(this, `/match_history/all/nickname/${nickname}/`).then(
         function(res) {
-            var processed = processHistory(res);
-            processed.historyUpdated = moment.utc().toDate();
-            db.collection('players').update({nick: nickname.toLowerCase()}, {$set: processed}, {upsert: true});
-            return processed;
+            res = processHistory(res);
+            res.historyUpdated = moment.utc().toDate();
+            players.update({nick: nickname.toLowerCase()}, {$set: res}, {upsert: true});
+            return res;
         },
         function(error) {
             return {
@@ -65,10 +65,10 @@ var updateHistory = function(nickname) {
 
 var processHistory = function(res) {
     let data = [[], [], []];
-    _.forEach(res, function(i, key){
-        data[key] = _.map(i.history.split(','), function(n){
-            return Number(n.split('|')[0]);
-        }).sort(function(a,b){return b - a;});
+    _.forEach(res, function(obj, key){
+        data[key] = _.map(obj.history.match(/([0-9]{6,12})/g), function(n){
+            return Number(n);
+        });
     });
     return {
         rnk_history: data[0],
@@ -78,14 +78,12 @@ var processHistory = function(res) {
 };
 
 var processPlayer = function(p) {
-    // Lowercase nickname for string matching later
-    p.nick = p.nickname.toLowerCase();
     // initial string parsing
-    p = _.forEach(p, function(n, key){
-        // check if is number
-        if (Number(n) == n) {
-            p[key] = Number(n);
+    p = _.mapValues(p, function(n){
+        if (!isNaN(n)) {
+            return Number(n);
         }
+        return n;
     });
     // make averages
     _.forEach(['rnk', 'cs', 'acc'], function(n) {
@@ -108,12 +106,15 @@ var processPlayer = function(p) {
         p[`${n}_kadr`] = (p[`${n}_herokills`] + p[`${n}_heroassists`]) / p[`${n}_deaths`];
     });
     // round down sigs
-    _.forEach(p, function(n, key) {
+    p = _.mapValues(p, function(n) {
         // check if number is float
-        if (n == Number(n) && n % 1 !== 0) {
-            p[key] = parseFloat(n.toFixed(3));
+        if (typeof n === 'number' && n % 1 !== 0) {
+            return Number(n.toFixed(3));
         }
+        return n;
     });
+    // Lowercase nickname for string matching later
+    p.nick = p.nickname.toLowerCase();
     return p;
 };
 
