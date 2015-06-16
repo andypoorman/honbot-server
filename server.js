@@ -191,7 +191,7 @@ app.use(route.get('/recentPlayers', function*(next){
 }));
 
 app.use(route.get('/recentMatches', function*(next){
-    let gtr = moment.utc().subtract(1, 'day').toDate();
+    let gtr = moment.utc().subtract(12, 'hours').toDate();
     this.body = this.db.collection('matches').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
     yield next;
 }));
