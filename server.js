@@ -197,7 +197,6 @@ app.use(route.get('/recentMatches', function*(next){
 }));
 
 app.use(route.get('/newestMatch', function*(next){
-    let gtr = moment.utc().subtract(12, 'hours').toDate();
     this.body = this.db.collection('matches').find({}, {id: 1, _id: 0}).sort({'id': -1}).limit(1).stream().pipe(JSONStream.stringify());
     yield next;
 }));
