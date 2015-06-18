@@ -138,7 +138,7 @@ app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
     this.body = this.db.collection('matches').find({
         'players.player_id': pid,
         mode: modes[mode]
-    }, {_id: 0}).stream().pipe(JSONStream.stringify());
+    }, {_id: 0}).sort({'id': -1}).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
