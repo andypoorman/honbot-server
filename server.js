@@ -210,7 +210,7 @@ app.use(route.get('/banner/:player', function*(playerName){
         let win = p.rnk_wins;
         let loss = p.rnk_losses;
         this.body = yield new Promise(function(resolve) {
-            gm(400, 60, '#191919')
+            gm(400, 60, '#121212')
             .fill('#ffffff')
             .font('Prototype.ttf', 30)
             .drawText(3, 26, p.nickname)
