@@ -22,7 +22,7 @@
     "lodash-node": "^3.9.3",
     "moment": "^2.10.3",
     "moment-timezone": "^0.4.0",
-    "mongodb": "^2.0.34",
+    "mongodb": "^2.0.35",
     "newrelic": "^1.20.1",
     "redis": "^0.12.1"
   },
