@@ -90,13 +90,13 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
     let count = Number(page) * 25;
     let p = yield player.lookupPlayerNickname.call(this, playerName, {});
     let updated;
-    if (p.length === 1 && p[0].historyUpdated !== undefined) {
+    if (p.length === 1 && p[0][`${mode}_history_updated`] !== undefined) {
         p = p[0];
-        if (moment.utc().diff(moment(p.historyUpdated), 'minutes') > 15) {
-            updated = yield player.updateHistory.call(this, playerName);
+        if (moment.utc().diff(moment(p[`${mode}_history_updated`]), 'minutes') > 15) {
+            updated = yield player.updateHistory.call(this, playerName, mode);
         }
     } else {
-        updated = yield player.updateHistory.call(this, playerName);
+        updated = yield player.updateHistory.call(this, playerName, mode);
     }
     if (updated && !updated.error) {
         p = updated;

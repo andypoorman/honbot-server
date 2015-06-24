@@ -46,12 +46,17 @@ var updatePlayer = function (nickname){
     );
 };
 
-var updateHistory = function(nickname) {
+var updateHistory = function(nickname, mode) {
     let players = this.db.collection('players');
-    return api.call(this, `/match_history/all/nickname/${nickname}/`).then(
+    let realmode = {
+        'rnk': 'ranked',
+        'cs': 'casual',
+        'acc': 'public'
+    }[mode];
+    return api.call(this, `/match_history/${realmode}/nickname/${nickname}/`).then(
         function(res) {
-            res = processHistory(res);
-            res.historyUpdated = moment.utc().toDate();
+            res = processHistory(res, mode);
+            res[`${mode}_history_updated`] = moment.utc().toDate();
             players.update({nick: nickname.toLowerCase()}, {$set: res}, {upsert: true});
             return res;
         },
@@ -63,18 +68,12 @@ var updateHistory = function(nickname) {
     );
 };
 
-var processHistory = function(res) {
-    let data = [[], [], []];
-    _.forEach(res, function(obj, key){
-        data[key] = _.map(obj.history.match(/([0-9]{6,12})/g), function(n){
-            return Number(n);
-        }).sort(function(a, b){return b-a;});
-    });
-    return {
-        rnk_history: data[0],
-        cs_history: data[1],
-        acc_history: data[2]
-    };
+var processHistory = function(res, mode) {
+    let data = {};
+    data[`${mode}_history`] = _.map(res[0].history.match(/([0-9]{6,12})/g), function(n){
+        return Number(n);
+    }).sort(function(a, b){return b-a;});
+    return data;
 };
 
 var processPlayer = function(p) {
