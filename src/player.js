@@ -66,7 +66,7 @@ var updateHistory = function(nickname, mode) {
 };
 
 var processHistory = function(res, mode) {
-    let data = {};
+    let data = {account_id: Number(res[0].account_id)};
     data[`${mode}_history`] = _.map(res[0].history.match(/([0-9]{6,12})/g), function(n){
         return Number(n);
     }).sort(function(a, b){return b-a;});

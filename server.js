@@ -102,6 +102,7 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
         p = updated;
     }
     if (updated && updated.error){
+        p = {account_id: p.player_id || 0};
         p[`${mode}_history`] = p[`${mode}_history`] || [];
     }
     p[`${mode}_history_updated`] = moment.utc().toDate();
@@ -116,7 +117,9 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
             lookup = lookup.concat(added);
         }
     }
-    this.body = _.sortByOrder(lookup, 'id', false);
+    this.body = {};
+    this.body.history = _.sortByOrder(lookup, 'id', false);
+    this.body.account_id = p.account_id;
     yield next;
 }));
 
