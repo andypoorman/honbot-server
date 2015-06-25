@@ -101,6 +101,11 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
     if (updated && !updated.error) {
         p = updated;
     }
+    if (updated && updated.error){
+        p[`${mode}_history`] = p[`${mode}_history`] || [];
+    }
+    p[`${mode}_history_updated`] = moment.utc().toDate();
+    this.db.collection('players').update({nick: playerName.toLowerCase()}, {$set: p}, {upsert: true});
     let sliced = _.slice(p[`${mode}_history`], count - 25, count);
     let lookup = yield match.lookup.call(this, sliced);
     let exists = _.pluck(lookup, 'id');

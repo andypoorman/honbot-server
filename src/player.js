@@ -47,7 +47,6 @@ var updatePlayer = function (nickname){
 };
 
 var updateHistory = function(nickname, mode) {
-    let players = this.db.collection('players');
     let realmode = {
         'rnk': 'ranked',
         'cs': 'casual',
@@ -56,8 +55,6 @@ var updateHistory = function(nickname, mode) {
     return api.call(this, `/match_history/${realmode}/nickname/${nickname}/`).then(
         function(res) {
             res = processHistory(res, mode);
-            res[`${mode}_history_updated`] = moment.utc().toDate();
-            players.update({nick: nickname.toLowerCase()}, {$set: res}, {upsert: true});
             return res;
         },
         function(error) {
