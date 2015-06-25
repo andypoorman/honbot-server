@@ -63,11 +63,13 @@ var processMatch = function(match) {
     processed.date = moment.tz(match[3][0].mdt, 'YYYY-MM-DD HH:mm:ss', 'America/Detroit').toDate();
     processed.id = Number(match[3][0].match_id);
     // create array of items
-    _.forEach(match[1], function(n){
-        items[n.account_id] = _.map(_.range(1, 7), function(i){
-            return Number(n[`slot_${i}`]) || null;
-        });
-    });
+    let slots = ['slot_1', 'slot_2', 'slot_3', 'slot_4', 'slot_5', 'slot_6'];
+    for (let n of match[1]) {
+        items[n.account_id] = [];
+        for (let i of slots){
+            items[n.account_id].push(Number(n[i]) || null);
+        }
+    }
     processed.players = _.map(match[2], function(n) {
         return {
             player_id: Number(n.account_id),

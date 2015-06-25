@@ -67,9 +67,7 @@ var updateHistory = function(nickname, mode) {
 
 var processHistory = function(res, mode) {
     let data = {account_id: Number(res[0].account_id)};
-    data[`${mode}_history`] = _.map(res[0].history.match(/([0-9]{6,12})/g), function(n){
-        return Number(n);
-    }).sort(function(a, b){return b-a;});
+    data[`${mode}_history`] = res[0].history.match(/([0-9]{6,12})/g).map(Number).sort(function(a, b){return b-a;});
     return data;
 };
 
@@ -82,7 +80,7 @@ var processPlayer = function(p) {
         return n;
     });
     // make averages
-    _.forEach(['rnk', 'cs', 'acc'], function(n) {
+    for (let n of ['rnk', 'cs', 'acc']) {
         p[`${n}_avg_kills`] = p[`${n}_herokills`] / p[`${n}_games_played`];
         p[`${n}_avg_deaths`] = p[`${n}_deaths`] / p[`${n}_games_played`];
         p[`${n}_avg_assists`] = p[`${n}_heroassists`] / p[`${n}_games_played`];
@@ -100,7 +98,7 @@ var processPlayer = function(p) {
         p[`${n}_kdr`] = p[`${n}_herokills`] / p[`${n}_deaths`];
         p[`${n}_avg_wards`] = p[`${n}_wards`] / p[`${n}_games_played`];
         p[`${n}_kadr`] = (p[`${n}_herokills`] + p[`${n}_heroassists`]) / p[`${n}_deaths`];
-    });
+    }
     // round down sigs
     p = _.mapValues(p, function(n) {
         // check if number is float
