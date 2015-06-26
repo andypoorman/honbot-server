@@ -6,44 +6,50 @@ var config = require('../config');
 var moment = require('moment');
 
 
-var api = function(path, count) {
-    let that = this;
-    if (!count) {
-        count = 0;
+class api {
+    constructor(db, ip, io) {
+        this.apilogger = db.collection('apilogger');
+        this.ip = ip;
+        this.io = io;
     }
-    return new Promise(function(resolve, reject) {
-        http.get({
-            host: 'api.heroesofnewerth.com',
-            path: `${path}?token=${config.token}`
-        }, function(response) {
-            console.log(`${path}?token=${config.token}`, response.statusCode);
-            that.db.collection('apilogger').insert({
-                date: moment.utc().toDate(),
-                api: path,
-                ip: that.request.ip,
-                host: response.hostname,
-                status: response.statusCode
-            });
-            if (response.statusCode === 200) {
-                that.app.io.emit('api', {success: true});
-                response.pipe(concat(function(body) {
-                    var parsed = JSON.parse(body);
-                    resolve(parsed);
-                }));
-            } else if (response.statusCode === 429) {
-                that.app.io.emit('api', {success: false});
-                if (count > 10) {
-                    reject(Error('Bad S2 API response'));
+    fetch(path, count) {
+        if (!count) {
+            count = 0;
+        }
+        return new Promise((resolve, reject) => {
+            http.get({
+                host: 'api.heroesofnewerth.com',
+                path: `${path}?token=${config.token}`
+            }, (response) => {
+                console.log(`${path}?token=${config.token}`, response.statusCode);
+                this.apilogger.insert({
+                    date: moment.utc().toDate(),
+                    api: path,
+                    ip: this.ip,
+                    host: response.hostname,
+                    status: response.statusCode
+                });
+                if (response.statusCode === 200) {
+                    this.io.emit('api', {success: true});
+                    response.pipe(concat(function(body) {
+                        var parsed = JSON.parse(body);
+                        resolve(parsed);
+                    }));
+                } else if (response.statusCode === 429) {
+                    this.io.emit('api', {success: false});
+                    if (count > 10) {
+                        reject(Error('Bad S2 API response'));
+                    } else {
+                        setTimeout(function() {
+                            resolve(this.api(path, count + 1));
+                        }, 150);
+                    }
                 } else {
-                    setTimeout(function() {
-                        resolve(api.call(that, path, count + 1));
-                    }, 150);
+                    reject(Error('Bad S2 API response'));
                 }
-            } else {
-                reject(Error('Bad S2 API response'));
-            }
+            });
         });
-    });
-};
+    }
+}
 
-module.exports = api;
+export default api;

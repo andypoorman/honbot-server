@@ -29,7 +29,8 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "babel-node --stage 0 server.js",
+    "serve": "nodemon --exec babel-node --stage 0 server.js"
   },
   "repository": {
     "type": "git",

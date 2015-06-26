@@ -7,7 +7,8 @@ This repository contains the backend for honbot. The frontend can be found in [h
 ##Requirements
 mongodb  
 redis  
-iojs or node  
+iojs or very latest node
+npm
 
 
 ##Installation
@@ -15,7 +16,8 @@ iojs or node
 clone the repo
 setup config.js. Check config.example.js
 npm install
-node server.js
+npm install -g babel
+npm run start
 ```
 
 

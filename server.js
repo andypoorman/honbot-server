@@ -15,8 +15,8 @@ var ratelimit = require('koa-ratelimit');
 var redis = require('redis');
 var gm = require('gm').subClass({imageMagick: true});
 
-var player = require('./src/player');
-var match = require('./src/match');
+import player from './src/player';
+import match from './src/match';
 var mongo = require('./src/mongo');
 var config = require('./config');
 
@@ -48,14 +48,15 @@ app.use(function*(next) {
 app.use(route.get('/player/:player', function*(playerName, next) {
     let updated;
     let exclude = {rnk_history: 0, cs_history: 0, acc_history: 0};
-    let p = yield player.lookupPlayerNickname.call(this, playerName, exclude);
+    let Player = new player(this.db, playerName);
+    let p = yield Player.lookupPlayerNickname(exclude);
     if (p.length === 1) {
         p = p[0];
         if (moment.utc().diff(moment(p.updated), 'minutes') > 15) {
-            updated = yield player.updatePlayer.call(this, playerName);
+            updated = yield Player.updatePlayer(this.request.ip, this.app.io);
         }
     } else {
-        updated = yield player.updatePlayer.call(this, playerName);
+        updated = yield Player.updatePlayer(this.request.ip, this.app.io);
     }
     // not in database, couldn't get from api. Throw error
     if(p.length === 0 && updated && updated.error){
@@ -88,15 +89,16 @@ app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
 
 app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mode, next) {
     let count = Number(page) * 25;
-    let p = yield player.lookupPlayerNickname.call(this, playerName, {});
+    let Player = new player(this.db, playerName);
+    let p = yield Player.lookupPlayerNickname();
     let updated;
     if (p.length === 1 && p[0][`${mode}_history_updated`] !== undefined) {
         p = p[0];
         if (moment.utc().diff(moment(p[`${mode}_history_updated`]), 'minutes') > 15) {
-            updated = yield player.updateHistory.call(this, playerName, mode);
+            updated = yield Player.updateHistory(mode, this.request.ip, this.app.io);
         }
     } else {
-        updated = yield player.updateHistory.call(this, playerName, mode);
+        updated = yield Player.updateHistory(mode, this.request.ip, this.app.io);
     }
     if (updated && !updated.error) {
         p = updated;
@@ -108,11 +110,12 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
     p[`${mode}_history_updated`] = moment.utc().toDate();
     this.db.collection('players').update({nick: playerName.toLowerCase()}, {$set: p}, {upsert: true});
     let sliced = _.slice(p[`${mode}_history`], count - 25, count);
-    let lookup = yield match.lookup.call(this, sliced);
+    let Match = new match(this.db);
+    let lookup = yield Match.lookup(sliced);
     let exists = _.pluck(lookup, 'id');
     let needs = _.difference(sliced, exists);
     if(needs.length >= 1){
-        let added = yield match.multigrab.call(this, needs);
+        let added = yield Match.multigrab(needs, this.request.ip, this.app.io);
         if(added && !added.error){
             lookup = lookup.concat(added);
         }
@@ -124,9 +127,10 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
 }));
 
 app.use(route.get('/match/:match', function*(matchID, next){
-    let m = yield match.lookup.call(this, [Number(matchID)]);
+    let Match = new match(this.db);
+    let m = yield Match.lookup([Number(matchID)]);
     if (m.length !== 1) {
-        m = yield match.multigrab.call(this, [matchID]);
+        m = yield Match.multigrab([matchID], this.request.ip, this.app.io);
     }
     this.body = m[0];
     yield next;
@@ -211,7 +215,8 @@ app.use(route.get('/newestMatch', function*(next){
 
 app.use(route.get('/banner/:player', function*(playerName){
     this.type = 'image/png';
-    let p = yield player.lookupPlayerNickname.call(this, playerName, {});
+    let Player = new player(this.db, playerName);
+    let p = yield Player.lookupPlayerNickname({nickname: 1, rnk_wins: 1, rnk_losses: 1, rnk_amm_team_rating: 1});
     if (p.length === 1) {
         p = p[0];
         let mmr = Math.round(p.rnk_amm_team_rating);
@@ -239,5 +244,3 @@ app.use(route.get('/banner/:player', function*(playerName){
 }));
 
 app.listen(config.port);
-
-module.exports = app;
