@@ -5,7 +5,6 @@
 require('newrelic');
 var koa = require('koa.io');
 var logger = require('koa-logger');
-var compress = require('koa-compress');
 var cors = require('kcors');
 var moment = require('moment');
 var _ = require('lodash-node');
@@ -35,7 +34,6 @@ app.use(ratelimit({
     return context.ip;
   }
 }));
-app.use(compress());
 app.use(cors());
 app.use(mongo());
 
@@ -45,7 +43,7 @@ app.use(function*(next) {
     yield next;
 });
 
-app.use(route.get('/player/:player', function*(playerName, next) {
+app.use(route.get('/player/:player', function*(playerName) {
     let updated;
     let exclude = {rnk_history: 0, cs_history: 0, acc_history: 0};
     let Player = new player(this.db, playerName);
@@ -72,10 +70,9 @@ app.use(route.get('/player/:player', function*(playerName, next) {
     if(updated && this.body !== updated){
         this.body.fallback = true;
     }
-    yield next;
 }));
 
-app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
+app.use(route.get('/bulkPlayers/:players', function*(playerList){
     let players = playerList.split(',');
     if(players.length > 50){
         this.throw(400);
@@ -83,10 +80,10 @@ app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
     players = players.map(Number);
     let exclude = {rnk_history: 0, cs_history: 0, acc_history: 0, rnk_history_updated: 0, acc_history_updated: 0, cs_history_updated: 0, _id: 0};
     this.body = this.db.collection('players').find({account_id: {$in: players}}, exclude).stream().pipe(JSONStream.stringify());
-    yield next;
 }));
 
-app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mode, next) {
+
+app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mode) {
     let count = Number(page) * 25;
     let Player = new player(this.db, playerName);
     let p = yield Player.lookupPlayerNickname();
@@ -122,20 +119,18 @@ app.use(route.get('/history/:player/:page/:mode', function*(playerName, page, mo
     this.body = {};
     this.body.history = _.sortByOrder(lookup, 'id', false);
     this.body.account_id = p.account_id;
-    yield next;
 }));
 
-app.use(route.get('/match/:match', function*(matchID, next){
+app.use(route.get('/match/:match', function*(matchID){
     let Match = new match(this.db);
     let m = yield Match.lookup([Number(matchID)]);
     if (m.length !== 1) {
         m = yield Match.multigrab([matchID], this.request.ip, this.app.io);
     }
     this.body = m[0];
-    yield next;
 }));
 
-app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
+app.use(route.get('/cache/:player/:mode', function*(playerID, mode) {
     let pid = Number(playerID);
     if(String(pid) !== playerID){
         this.status = 400;
@@ -150,10 +145,9 @@ app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
         'players.player_id': pid,
         mode: modes[mode]
     }, {_id: 0}).sort({'id': -1}).stream().pipe(JSONStream.stringify());
-    yield next;
 }));
 
-app.use(route.get('/counts', function*(next){
+app.use(route.get('/counts', function*(){
     let apilogger = this.db.collection('apilogger');
     let matches = this.db.collection('matches');
     let players = this.db.collection('players');
@@ -193,23 +187,19 @@ app.use(route.get('/counts', function*(next){
             resolve(count);
         });
     });
-    yield next;
 }));
 
-app.use(route.get('/recentPlayers', function*(next){
+app.use(route.get('/recentPlayers', function*(){
     this.body = this.db.collection('players').find({}, {nickname: 1}, {limit: 20}).sort({updated: -1}).stream().pipe(JSONStream.stringify());
-    yield next;
 }));
 
-app.use(route.get('/recentMatches', function*(next){
+app.use(route.get('/recentMatches', function*(){
     let gtr = moment.utc().subtract(12, 'hours').toDate();
     this.body = this.db.collection('matches').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
-    yield next;
 }));
 
-app.use(route.get('/newestMatch', function*(next){
+app.use(route.get('/newestMatch', function*(){
     this.body = this.db.collection('matches').find({}, {id: 1, _id: 0}).sort({'id': -1}).limit(1).stream().pipe(JSONStream.stringify());
-    yield next;
 }));
 
 app.use(route.get('/banner/:player', function*(playerName){
