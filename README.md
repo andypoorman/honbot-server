@@ -19,6 +19,7 @@ npm install
 npm install -g babel
 npm run start
 ```
+for servers ```forever start -c "babel-node" server.js```
 
 
 ## Indexes

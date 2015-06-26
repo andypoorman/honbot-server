@@ -81,7 +81,7 @@ app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
         this.throw(400);
     }
     players = players.map(Number);
-    let exclude = {rnk_history: 0, cs_history: 0, acc_history: 0, rnk_history_updated: 0, acc_history_updated: 0, cs_history_updated: 0};
+    let exclude = {rnk_history: 0, cs_history: 0, acc_history: 0, rnk_history_updated: 0, acc_history_updated: 0, cs_history_updated: 0, _id: 0};
     this.body = this.db.collection('players').find({account_id: {$in: players}}, exclude).stream().pipe(JSONStream.stringify());
     yield next;
 }));
