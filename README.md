@@ -16,8 +16,7 @@ npm
 clone the repo
 setup config.js. Check config.example.js
 npm install
-npm install -g babel
-npm run start
+node main.js
 ```
 for servers ```forever start --killSignal=SIGTERM -c "babel-node --stage 0" server.js```
 
