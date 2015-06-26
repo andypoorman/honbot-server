@@ -80,10 +80,9 @@ app.use(route.get('/bulkPlayers/:players', function*(playerList, next){
     if(players.length > 50){
         this.throw(400);
     }
-    players = _.map(players, function(n){
-        return Number(n);
-    });
-    this.body = this.db.collection('players').find({account_id: {$in: players}}).stream().pipe(JSONStream.stringify());
+    players = players.map(Number);
+    let exclude = {rnk_history: 0, cs_history: 0, acc_history: 0, rnk_history_updated: 0, acc_history_updated: 0, cs_history_updated: 0};
+    this.body = this.db.collection('players').find({account_id: {$in: players}}, exclude).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
