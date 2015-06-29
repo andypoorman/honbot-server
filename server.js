@@ -1,5 +1,6 @@
 'use strict';
 
+require('newrelic');
 var koa = require('koa.io');
 var logger = require('koa-logger');
 var cors = require('kcors');
