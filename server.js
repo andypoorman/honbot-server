@@ -62,7 +62,11 @@ app.use(route.get('/player/:player', function*(playerName, next) {
     let exclude = {
         rnk_history: 0,
         cs_history: 0,
-        acc_history: 0
+        acc_history: 0,
+        rnk_history_updated: 0,
+        cs_history_updated: 0,
+        acc_history_updated: 0,
+        _id: 0
     };
     let Player = new player(this.db, playerName);
     let p = yield Player.lookupPlayerNickname(exclude);
