@@ -41,8 +41,8 @@ class api {
                     if (count > 10) {
                         reject(Error('Bad S2 API response'));
                     } else {
-                        setTimeout(function() {
-                            resolve(this.api(path, count + 1));
+                        setTimeout(() => {
+                            resolve(this.fetch(path, count + 1));
                         }, 150);
                     }
                 } else {

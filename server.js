@@ -70,7 +70,7 @@ app.use(route.get('/player/:player', function*(playerName, next) {
     };
     let Player = new player(this.db, playerName);
     let p = yield Player.lookupPlayerNickname(exclude);
-    if (p.length === 1 && p.updated) {
+    if (p.length === 1 && p[0].updated !== undefined) {
         p = p[0];
         if (moment.utc().diff(moment(p.updated), 'minutes') > 15) {
             updated = yield Player.updatePlayer(this.request.ip, this.app.io);
