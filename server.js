@@ -20,17 +20,18 @@ import config from './config';
 
 var app = koa();
 app.proxy = true;
-var db;
-MongoClient.connect(config.db, {
-    server: {
-        poolSize: 15
-    },
-    native_parser: true,
-    auto_reconnect: true
-}, function(err, database) {
-    db = database;
-    app.listen(config.port);
+var db = new Promise(function(resolve) {
+    MongoClient.connect(config.db, {
+        server: {
+            poolSize: 15
+        },
+        native_parser: true,
+        auto_reconnect: true
+    }, function(err, database) {
+        resolve(database);
+    });
 });
+
 
 app.use(ratelimit({
     db: redis.createClient(),
@@ -45,7 +46,7 @@ if (config.debug) {
 }
 app.use(cors());
 app.use(function* mongopool(next) {
-    this.db = db;
+    this.db = yield db;
     yield next;
 });
 
@@ -315,3 +316,5 @@ app.use(route.get('/banner/:player', function*(playerName, next) {
     }
     yield next;
 }));
+
+app.listen(config.port);
