@@ -2,8 +2,9 @@
 
 var http = require('http');
 var concat = require('concat-stream');
-var config = require('../config');
 var moment = require('moment');
+
+import config from '../config';
 
 
 class api {

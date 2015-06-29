@@ -1,8 +1,5 @@
 'use strict';
-/**
- * Koa Module dependencies.
- */
-require('newrelic');
+
 var koa = require('koa.io');
 var logger = require('koa-logger');
 var cors = require('kcors');
@@ -16,10 +13,11 @@ var gm = require('gm').subClass({imageMagick: true});
 
 import player from './src/player';
 import match from './src/match';
-var mongo = require('./src/mongo');
-var config = require('./config');
+import mongo from './src/mongo';
+import config from './config';
 
 var app = koa();
+var mongoPool = mongo();
 app.proxy = true;
 
 if (config.debug) {
@@ -35,7 +33,19 @@ app.use(ratelimit({
   }
 }));
 app.use(cors());
-app.use(mongo());
+app.use(function *mongopool(next) {
+    this.db = yield mongoPool.acquire;
+    if (!this.db) {
+        this.throw('Mongo Connection Fail');
+    }
+    try {
+        yield next;
+    } catch (e) {
+        throw e;
+    } finally {
+        mongoPool.release(this.db);
+    }
+});
 
 // json middleware
 app.use(function*(next) {
