@@ -1,6 +1,8 @@
 'use strict';
 
-require('newrelic');
+if(!config.debug){
+    require('newrelic');
+}
 var koa = require('koa.io');
 var logger = require('koa-logger');
 var cors = require('kcors');
@@ -11,9 +13,7 @@ var JSONStream = require('JSONStream');
 var ratelimit = require('koa-ratelimit');
 var redis = require('redis');
 var MongoClient = require('mongodb').MongoClient;
-var gm = require('gm').subClass({
-    imageMagick: true
-});
+var gm = require('gm').subClass({imageMagick: true});
 
 import player from './src/player';
 import match from './src/match';
@@ -194,11 +194,7 @@ app.use(route.get('/cache/:player/:mode', function*(playerID, mode, next) {
     this.body = this.db.collection('matches').find({
         'players.player_id': pid,
         mode: modes[mode]
-    }, {
-        _id: 0
-    }).sort({
-        'id': -1
-    }).stream().pipe(JSONStream.stringify());
+    }, {_id: 0}).sort({'id': -1}).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
@@ -254,35 +250,18 @@ app.use(route.get('/counts', function*(next) {
 }));
 
 app.use(route.get('/recentPlayers', function*(next) {
-    this.body = this.db.collection('players').find({}, {
-        nickname: 1
-    }, {
-        limit: 20
-    }).sort({
-        updated: -1
-    }).stream().pipe(JSONStream.stringify());
+    this.body = this.db.collection('players').find({}, {nickname: 1}, {limit: 20}).sort({updated: -1}).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
 app.use(route.get('/recentMatches', function*(next) {
     let gtr = moment.utc().subtract(12, 'hours').toDate();
-    this.body = this.db.collection('matches').find({
-        date: {
-            $gte: gtr
-        }
-    }, {
-        _id: 0
-    }).stream().pipe(JSONStream.stringify());
+    this.body = this.db.collection('matches').find({date: {$gte: gtr}}, {_id: 0}).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
 app.use(route.get('/newestMatch', function*(next) {
-    this.body = this.db.collection('matches').find({}, {
-        id: 1,
-        _id: 0
-    }).sort({
-        'id': -1
-    }).limit(1).stream().pipe(JSONStream.stringify());
+    this.body = this.db.collection('matches').find({}, {id: 1, _id: 0}).sort({'id': -1}).limit(1).stream().pipe(JSONStream.stringify());
     yield next;
 }));
 
