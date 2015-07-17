@@ -39,14 +39,14 @@ class api {
                 } else if (response.statusCode === 429) {
                     this.io.emit('api', {success: false});
                     if (count > 10) {
-                        reject(Error('Bad S2 API response'));
+                        reject(Error('Bad Frostburn Studios API response'));
                     } else {
                         setTimeout(() => {
                             resolve(this.fetch(path, count + 1));
                         }, 150);
                     }
                 } else {
-                    reject(Error('Bad S2 API response'));
+                    reject(Error('Bad Frostburn Studios API response'));
                 }
             });
         });
